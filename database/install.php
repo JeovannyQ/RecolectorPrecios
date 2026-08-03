@@ -25,26 +25,25 @@ echo "<!DOCTYPE html>
     <div class='log'>";
 
 try {
-    // 1. Intentar crear la base de datos de manera segura (si el usuario de MySQL tiene permisos GRANT/CREATE)
+    // 1. Intentar crear BD si hay permisos root
     try {
         $pdoRoot = getDBConnection(false);
         if ($pdoRoot) {
-            echo "▶️ Verificando base de datos '<code>" . DB_NAME . "</code>'...<br>";
             $pdoRoot->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-            echo "<span class='success'>✅ Base de datos verificada.</span><br><br>";
         }
-    } catch (Exception $dbEx) {
-        echo "ℹ️ Usando base de datos asignada: <code>" . DB_NAME . "</code>.<br><br>";
-    }
+    } catch (Exception $dbEx) {}
 
-    // 2. Conectar a la BD
+    // 2. Conectar a la BD activa
     $pdo = getDBConnection(true);
     if (!$pdo) {
-        throw new Exception("No se pudo conectar a la base de datos " . DB_NAME . ". Por favor verifique si la base de datos existe en su cPanel/DirectAdmin.");
+        throw new Exception("No se pudo conectar a ninguna base de datos MySQL con el usuario " . DB_USER . ". Asegúrese de haber creado la base de datos en su cPanel y asignado el usuario MySQL.");
     }
 
+    $currentDb = $pdo->query("SELECT DATABASE()")->fetchColumn();
+    echo "▶️ Conectado exitosamente a la base de datos: <code>$currentDb</code><br><br>";
+
     // 3. Crear Tablas
-    echo "▶️ Creando tablas del sistema en '<code>" . DB_NAME . "</code>'...<br>";
+    echo "▶️ Creando tablas del sistema en '<code>$currentDb</code>'...<br>";
 
     // Tablas de Roles y Usuarios
     $pdo->exec("
