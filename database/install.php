@@ -25,24 +25,26 @@ echo "<!DOCTYPE html>
     <div class='log'>";
 
 try {
-    // 1. Conectar a MySQL sin seleccionar DB para crearla
-    $pdoRoot = getDBConnection(false);
-    if (!$pdoRoot) {
-        throw new Exception("No se pudo conectar al servidor MySQL en " . DB_HOST);
+    // 1. Intentar crear la base de datos de manera segura (si el usuario de MySQL tiene permisos GRANT/CREATE)
+    try {
+        $pdoRoot = getDBConnection(false);
+        if ($pdoRoot) {
+            echo "▶️ Verificando base de datos '<code>" . DB_NAME . "</code>'...<br>";
+            $pdoRoot->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            echo "<span class='success'>✅ Base de datos verificada.</span><br><br>";
+        }
+    } catch (Exception $dbEx) {
+        echo "ℹ️ Usando base de datos asignada: <code>" . DB_NAME . "</code>.<br><br>";
     }
 
-    echo "▶️ Creando base de datos '<code>" . DB_NAME . "</code>' si no existe...<br>";
-    $pdoRoot->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-    echo "<span class='success'>✅ Base de datos verificada/creada.</span><br><br>";
-
-    // 2. Conectar a la DB recién creada
+    // 2. Conectar a la BD
     $pdo = getDBConnection(true);
     if (!$pdo) {
-        throw new Exception("No se pudo conectar a la base de datos " . DB_NAME);
+        throw new Exception("No se pudo conectar a la base de datos " . DB_NAME . ". Por favor verifique si la base de datos existe en su cPanel/DirectAdmin.");
     }
 
     // 3. Crear Tablas
-    echo "▶️ Creando tablas del sistema...<br>";
+    echo "▶️ Creando tablas del sistema en '<code>" . DB_NAME . "</code>'...<br>";
 
     // Tablas de Roles y Usuarios
     $pdo->exec("
@@ -147,7 +149,7 @@ try {
     ");
     echo "<span class='success'>✅ Usuario 'admin' (Clave: <code>admin123</code>) creado.</span><br><br>";
 
-    // 6. Poblar Catálogo Completo (11 Categorías y 120+ Productos de la lista oficial)
+    // 6. Poblar Catálogo Completo (11 Categorías y 202 Productos de la lista oficial)
     echo "▶️ Cargando catálogo oficial de productos agrícolas (11 categorías)...<br>";
 
     $catalog = [
@@ -438,6 +440,29 @@ try {
     }
 
     echo "<span class='success'>✅ $cCount Categorías y $pCount Productos precargados correctamente.</span><br><br>";
+
+    // 7. Crear colecta inicial vacía
+    $stmtCheckCol = $pdo->query("SELECT COUNT(*) FROM colectas");
+    if ($stmtCheckCol->fetchColumn() == 0) {
+        $fecha = date('Y-m-d');
+        $pdo->exec("
+            INSERT INTO colectas (fecha, regional, zona, informador_nombre, observaciones, estado, creado_por)
+            VALUES ('$fecha', 'CIBAO NORTE', 'SANTIAGO', 'Informador Oficial', 'Colecta inicial de plantilla PDF', 'Completado', 1)
+        ");
+        $colectaId = $pdo->lastInsertId();
+
+        $stmtProds = $pdo->query("SELECT id, unidad_medida FROM productos");
+        $prodsList = $stmtProds->fetchAll();
+        $stmtDet = $pdo->prepare("
+            INSERT INTO colecta_detalles (colecta_id, producto_id, unidad_medida, precio_mayorista, precio_minorista, precio_finca)
+            VALUES ($colectaId, :producto_id, :unidad_medida, 0.00, 0.00, 0.00)
+        ");
+        foreach ($prodsList as $pr) {
+            $stmtDet->execute([':producto_id' => $pr['id'], ':unidad_medida' => $pr['unidad_medida']]);
+        }
+        echo "<span class='success'>✅ Colecta inicial #$colectaId precargada.</span><br><br>";
+    }
+
     echo "<h2 style='color:#4ade80;'>🎉 INSTALACIÓN COMPLETADA EXITOSAMENTE</h2>";
     echo "<a href='../index.php' class='btn'>Ir al Sistema Recolector de Precios →</a>";
 
