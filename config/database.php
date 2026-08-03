@@ -2,11 +2,16 @@
 // Configuración de la Base de Datos para Recolector de Precios
 date_default_timezone_set('America/Santo_Domingo');
 
+// Detectar producción en servidor quitech01.com
+$esProduccion = (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'quitech01.com') !== false) 
+             || (isset($_SERVER['PWD']) && strpos($_SERVER['PWD'], 'quitech') !== false)
+             || (file_exists('/home/quitech'));
+
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_NAME', getenv('DB_NAME') ?: 'recolector_precios');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: ($esProduccion ? 'quitech_recolector' : 'recolector_precios'));
+define('DB_USER', getenv('DB_USER') ?: ($esProduccion ? 'quitech_MiniJosue' : 'root'));
+define('DB_PASS', getenv('DB_PASS') ?: ($esProduccion ? '5YkWujmGatWNXtMWHFUE' : ''));
 define('DB_CHARSET', 'utf8mb4');
 
 function getDBConnection($includeDbName = true) {
@@ -31,7 +36,7 @@ function getDBConnection($includeDbName = true) {
         }
         return $conn;
     } catch (PDOException $e) {
-        if (strpos($e->getMessage(), 'Unknown database') !== false && $includeDbName) {
+        if ((strpos($e->getMessage(), 'Unknown database') !== false || $e->getCode() == 1049) && $includeDbName) {
             return null; // Database not created yet, handle in installer
         }
         error_log("Error DB: " . $e->getMessage());
