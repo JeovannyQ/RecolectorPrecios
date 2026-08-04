@@ -36,9 +36,14 @@ if (!$user || !password_verify($password, $user['password_hash'])) {
 }
 
 // Iniciar sesión y cargar permisos
-$stmtPerms = $pdo->prepare("SELECT permiso FROM role_permissions WHERE rol_id = :rol_id");
-$stmtPerms->execute([':rol_id' => $user['rol_id']]);
-$permisos = $stmtPerms->fetchAll(PDO::FETCH_COLUMN);
+$permisos = [];
+try {
+    $stmtPerms = $pdo->prepare("SELECT permiso FROM role_permissions WHERE rol_id = :rol_id");
+    $stmtPerms->execute([':rol_id' => $user['rol_id']]);
+    $permisos = $stmtPerms->fetchAll(PDO::FETCH_COLUMN);
+} catch (Exception $e) {
+    $permisos = [];
+}
 
 if (empty($permisos)) {
     if ($user['rol_nombre'] === 'Administrador') {
