@@ -126,6 +126,16 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `role_permissions` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `rol_id` INT NOT NULL,
+            `permiso` VARCHAR(50) NOT NULL,
+            FOREIGN KEY (`rol_id`) REFERENCES `roles`(`id`) ON DELETE CASCADE,
+            UNIQUE KEY `unique_role_perm` (`rol_id`, `permiso`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
     echo "<span class='success'>✅ Tablas creadas exitosamente.</span><br><br>";
 
     // 4. Insertar Roles por Defecto
@@ -136,7 +146,13 @@ try {
         (2, 'Informador', 'Registro de colecta semanal de precios en campo')
         ON DUPLICATE KEY UPDATE `descripcion` = VALUES(`descripcion`);
     ");
-    echo "<span class='success'>✅ Roles 'Administrador' e 'Informador' listos.</span><br><br>";
+
+    $pdo->exec("
+        INSERT IGNORE INTO `role_permissions` (`rol_id`, `permiso`) VALUES
+        (1, 'dashboard'), (1, 'colecta'), (1, 'historico'), (1, 'reportes'), (1, 'categorias'), (1, 'productos'), (1, 'usuarios'),
+        (2, 'colecta');
+    ");
+    echo "<span class='success'>✅ Roles y Permisos por defecto configurados.</span><br><br>";
 
     // 5. Insertar Usuario Admin por Defecto
     echo "▶️ Creando usuario inicial Admin...<br>";

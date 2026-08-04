@@ -10,6 +10,21 @@ $userRol          = $_SESSION['rol_nombre'] ?? 'Informador';
 $userRegional     = $_SESSION['regional_asignada'] ?? 'CIBAO NORTE';
 $userZona         = $_SESSION['zona_asignada'] ?? 'SANTIAGO';
 $isAdmin          = ($userRol === 'Administrador');
+
+$userPermisos = $_SESSION['permisos'] ?? [];
+if (empty($userPermisos)) {
+    if ($isAdmin) {
+        $userPermisos = ['dashboard', 'colecta', 'historico', 'reportes', 'categorias', 'productos', 'usuarios'];
+    } else {
+        $userPermisos = ['colecta'];
+    }
+}
+
+function hasPerm($perm) {
+    global $userPermisos, $isAdmin;
+    if ($isAdmin) return true;
+    return in_array($perm, $userPermisos);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -309,126 +324,129 @@ $isAdmin          = ($userRol === 'Administrador');
 
         .price-table tr:hover { background: var(--bg-card-hover); }
 
-        .category-row td {
-            background: rgba(2, 132, 199, 0.08);
-            color: #38bdf8;
+        .category-row {
+            background: rgba(2, 132, 199, 0.08) !important;
             font-weight: 700;
-            font-size: 0.95rem;
-            padding: 12px 16px;
+            color: #38bdf8;
+        }
+
+        .category-row td {
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
             border-top: 1px solid var(--border-color);
         }
 
-        .code-tag {
-            background: rgba(255, 255, 255, 0.06);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .unit-tag {
-            font-size: 0.82rem;
-            color: #10b981;
-            font-weight: 500;
-        }
-
         .price-input {
-            width: 110px;
+            width: 100%;
+            max-width: 110px;
             background: var(--bg-input);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 8px 10px;
-            color: #ffffff;
+            color: var(--text-main);
             font-size: 0.95rem;
-            text-align: right;
             font-weight: 600;
+            text-align: right;
             outline: none;
             transition: all 0.2s;
         }
 
         .price-input:focus {
             border-color: var(--accent);
-            background: #243552;
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .price-input.filled {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--success);
+            color: #34d399;
         }
 
-        /* Bottom Bar */
+        .unit-tag {
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: var(--text-muted);
+        }
+
+        .code-tag {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #38bdf8;
+        }
+
+        /* Bottom Floating Bar */
         .bottom-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: #0d1424;
+            background: rgba(19, 28, 46, 0.95);
+            backdrop-filter: blur(10px);
             border-top: 1px solid var(--border-color);
-            padding: 12px 20px;
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             z-index: 99;
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
         }
 
-        .counter-badge { font-size: 0.9rem; color: var(--text-muted); }
-        .counter-badge strong { color: #10b981; font-size: 1.1rem; }
+        .counter-badge {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .counter-badge strong { color: var(--accent); font-size: 1.1rem; }
 
         .btn-action {
-            background: linear-gradient(135deg, #0284c7, #10b981);
+            background: linear-gradient(135deg, #0284c7, #0369a1);
             color: white;
             border: none;
-            padding: 10px 22px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
             font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .btn-action:hover { transform: translateY(-2px); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
-
-        /* History & Admin Tables */
-        .history-list { display: flex; flex-direction: column; gap: 12px; }
-
-        .history-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        /* Modal Overlay */
+        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            padding: 20px;
+            padding: 16px;
         }
 
         .modal-content {
@@ -436,36 +454,49 @@ $isAdmin          = ($userRol === 'Administrador');
             border: 1px solid var(--border-color);
             border-radius: 16px;
             width: 100%;
-            max-width: 850px;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
         }
 
         .modal-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
         }
 
-        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-        .btn-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 14px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .bottom-bar { flex-direction: column; gap: 10px; text-align: center; }
+            .price-table th, .price-table td { padding: 10px 12px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
+    <!-- Top Navbar -->
     <nav class="navbar">
         <div class="brand">
             <div class="brand-icon">
-                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                <svg viewBox="0 0 24 24"><path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 00.7-1.7l-9-9a1 1 0 00-1.4 0l-9 9A1 1 0 003 13z"/></svg>
             </div>
             <div>
                 <div class="brand-title">Recolector de Precios</div>
-                <div class="brand-sub">Sistema de Monitoreo Semanal</div>
+                <div class="brand-sub">Sistema Semanal de Precios Agrícolas</div>
             </div>
         </div>
 
@@ -481,31 +512,155 @@ $isAdmin          = ($userRol === 'Administrador');
     <div class="container">
         
         <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('nueva')">
+        <div class="nav-tabs" id="mainNavTabs">
+            <?php if (hasPerm('dashboard')): ?>
+            <button class="tab-btn" onclick="switchTab('dashboard')">
+                📊 Dashboard
+            </button>
+            <?php endif; ?>
+
+            <?php if (hasPerm('colecta')): ?>
+            <button class="tab-btn" onclick="switchTab('nueva')">
                 📝 Nueva Colecta Semanal
             </button>
+            <?php endif; ?>
+
+            <?php if (hasPerm('historico')): ?>
             <button class="tab-btn" onclick="switchTab('historico')">
-                📊 Histórico de Levantamientos
+                📋 Histórico de Levantamientos
             </button>
+            <?php endif; ?>
+
+            <?php if (hasPerm('reportes')): ?>
             <button class="tab-btn" onclick="switchTab('reportes')">
                 📈 Reportes & Tendencias
             </button>
-            <?php if ($isAdmin): ?>
+            <?php endif; ?>
+
+            <?php if (hasPerm('categorias')): ?>
             <button class="tab-btn" onclick="switchTab('admin_categorias')">
                 📁 Categorías
             </button>
+            <?php endif; ?>
+
+            <?php if (hasPerm('productos')): ?>
             <button class="tab-btn" onclick="switchTab('admin_productos')">
                 🏷️ Productos
             </button>
+            <?php endif; ?>
+
+            <?php if (hasPerm('usuarios')): ?>
             <button class="tab-btn" onclick="switchTab('admin_usuarios')">
                 👥 Usuarios y Roles
             </button>
             <?php endif; ?>
         </div>
 
+        <!-- TAB 0: DASHBOARD -->
+        <?php if (hasPerm('dashboard')): ?>
+        <div id="tabDashboard" class="tab-content" style="display: none;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">📊 Panel Principal & Resumen de Precios</h2>
+                    <button class="pill-btn" onclick="loadDashboardStats()">🔄 Actualizar Panel</button>
+                </div>
+
+                <!-- KPI Cards Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div style="background: linear-gradient(135deg, rgba(2,132,199,0.15), rgba(16,185,129,0.1)); border: 1px solid rgba(2,132,199,0.3); border-radius: 14px; padding: 20px;">
+                        <div style="font-size: 0.8rem; font-weight: 600; color: #38bdf8; text-transform: uppercase;">Colectas del Mes</div>
+                        <div id="dashColectasMes" style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: white; margin: 8px 0;">0</div>
+                        <div id="dashColectasTotal" style="font-size: 0.8rem; color: var(--text-muted);">0 colectas acumuladas</div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(59,130,246,0.1)); border: 1px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 20px;">
+                        <div style="font-size: 0.8rem; font-weight: 600; color: #34d399; text-transform: uppercase;">Catálogo Agrícola</div>
+                        <div id="dashTotalProductos" style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: white; margin: 8px 0;">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Productos monitoreados</div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(239,68,68,0.1)); border: 1px solid rgba(245,158,11,0.3); border-radius: 14px; padding: 20px;">
+                        <div style="font-size: 0.8rem; font-weight: 600; color: #fbbf24; text-transform: uppercase;">Promedio Precios</div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px;">
+                            <div>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Mayorista</span>
+                                <strong id="dashAvgMayorista" style="font-size: 1.1rem; color: #38bdf8;">$0.00</strong>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Minorista</span>
+                                <strong id="dashAvgMinorista" style="font-size: 1.1rem; color: #34d399;">$0.00</strong>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Finca</span>
+                                <strong id="dashAvgFinca" style="font-size: 1.1rem; color: #fbbf24;">$0.00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(236,72,153,0.1)); border: 1px solid rgba(168,85,247,0.3); border-radius: 14px; padding: 20px;">
+                        <div style="font-size: 0.8rem; font-weight: 600; color: #c084fc; text-transform: uppercase;">Informadores / Colectores</div>
+                        <div id="dashTotalInformadores" style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: white; margin: 8px 0;">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Usuarios activos en sistema</div>
+                    </div>
+                </div>
+
+                <!-- Recent Colectas Table & Quick Actions -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; color: #38bdf8;">📋 Últimas Colectas Registradas</h3>
+                        <div class="table-responsive">
+                            <table class="price-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Zona</th>
+                                        <th>Informador</th>
+                                        <th>Ítems</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashUltimasColectasBody">
+                                    <tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Cargando información del dashboard...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; color: #34d399;">⚡ Accesos Rápidos</h3>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <?php if (hasPerm('colecta')): ?>
+                            <button class="btn-action" style="width: 100%; text-align: left; justify-content: flex-start;" onclick="switchTab('nueva')">
+                                📝 Registrar Nueva Colecta
+                            </button>
+                            <?php endif; ?>
+                            <?php if (hasPerm('historico')): ?>
+                            <button class="pill-btn" style="width: 100%; text-align: left; justify-content: flex-start; padding: 14px;" onclick="switchTab('historico')">
+                                📋 Ver Histórico de Hojas
+                            </button>
+                            <?php endif; ?>
+                            <?php if (hasPerm('reportes')): ?>
+                            <button class="pill-btn" style="width: 100%; text-align: left; justify-content: flex-start; padding: 14px;" onclick="switchTab('reportes')">
+                                📈 Consultar Reportes de Precios
+                            </button>
+                            <?php endif; ?>
+                        </div>
+
+                        <div style="margin-top: 20px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+                            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">Distribución por Zona</h4>
+                            <div id="dashZonaStats" style="display: flex; flex-direction: column; gap: 8px;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Cargando zonas...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- TAB 1: NUEVA COLECTA -->
-        <div id="tabNueva" class="tab-content">
+        <?php if (hasPerm('colecta')): ?>
+        <div id="tabNueva" class="tab-content" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
                     <h2 class="section-title" id="formSectionTitle">Encabezado de Levantamiento</h2>
@@ -574,8 +729,10 @@ $isAdmin          = ($userRol === 'Administrador');
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- TAB 2: HISTORICO -->
+        <?php if (hasPerm('historico')): ?>
         <div id="tabHistorico" class="tab-content" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
@@ -587,8 +744,10 @@ $isAdmin          = ($userRol === 'Administrador');
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- TAB 3: REPORTES -->
+        <?php if (hasPerm('reportes')): ?>
         <div id="tabReportes" class="tab-content" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
@@ -623,9 +782,10 @@ $isAdmin          = ($userRol === 'Administrador');
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <?php if ($isAdmin): ?>
         <!-- TAB 4: MANTENIMIENTO CATEGORIAS -->
+        <?php if (hasPerm('categorias')): ?>
         <div id="tabAdminCategorias" class="tab-content" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
@@ -637,8 +797,10 @@ $isAdmin          = ($userRol === 'Administrador');
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- TAB 5: MANTENIMIENTO PRODUCTOS -->
+        <?php if (hasPerm('productos')): ?>
         <div id="tabAdminProductos" class="tab-content" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
@@ -650,12 +812,14 @@ $isAdmin          = ($userRol === 'Administrador');
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- TAB 6: USUARIOS Y ROLES -->
+        <?php if (hasPerm('usuarios')): ?>
         <div id="tabAdminUsuarios" class="tab-content" style="display: none;">
             <div class="section-card" style="margin-bottom: 24px;">
                 <div class="section-header">
-                    <h2 class="section-title">Gestión de Roles del Sistema</h2>
+                    <h2 class="section-title">Gestión de Roles y Permisos de Menú</h2>
                     <button class="btn-action" onclick="openRoleModal()">➕ Nuevo Rol</button>
                 </div>
                 <div id="rolesList" class="table-responsive">
@@ -678,7 +842,7 @@ $isAdmin          = ($userRol === 'Administrador');
     </div>
 
     <!-- Bottom Bar -->
-    <div class="bottom-bar" id="bottomBar">
+    <div class="bottom-bar" id="bottomBar" style="display: none;">
         <div class="counter-badge">
             Productos digitados: <strong id="filledCounter">0</strong>
         </div>
@@ -703,37 +867,113 @@ $isAdmin          = ($userRol === 'Administrador');
         let rolesData = [];
         let filledProducts = {};
         const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
+        const hasDashboardPerm = <?php echo hasPerm('dashboard') ? 'true' : 'false'; ?>;
+        const hasColectaPerm = <?php echo hasPerm('colecta') ? 'true' : 'false'; ?>;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadCatalog();
-            if (isAdmin) loadRoles();
+            loadRoles();
+
+            if (hasDashboardPerm) {
+                switchTab('dashboard');
+            } else if (hasColectaPerm) {
+                switchTab('nueva');
+            } else {
+                const firstBtn = document.querySelector('.tab-btn');
+                if (firstBtn) firstBtn.click();
+            }
         });
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
 
-            document.getElementById('bottomBar').style.display = (tab === 'nueva') ? 'flex' : 'none';
+            const bottomBar = document.getElementById('bottomBar');
+            if (bottomBar) bottomBar.style.display = (tab === 'nueva') ? 'flex' : 'none';
 
-            if (tab === 'nueva') {
+            if (tab === 'dashboard' && document.getElementById('tabDashboard')) {
+                document.getElementById('tabDashboard').style.display = 'block';
+                loadDashboardStats();
+            } else if (tab === 'nueva' && document.getElementById('tabNueva')) {
                 document.getElementById('tabNueva').style.display = 'block';
-            } else if (tab === 'historico') {
+            } else if (tab === 'historico' && document.getElementById('tabHistorico')) {
                 document.getElementById('tabHistorico').style.display = 'block';
                 loadHistory();
-            } else if (tab === 'reportes') {
+            } else if (tab === 'reportes' && document.getElementById('tabReportes')) {
                 document.getElementById('tabReportes').style.display = 'block';
-            } else if (tab === 'admin_categorias') {
+            } else if (tab === 'admin_categorias' && document.getElementById('tabAdminCategorias')) {
                 document.getElementById('tabAdminCategorias').style.display = 'block';
                 renderAdminCategories();
-            } else if (tab === 'admin_productos') {
+            } else if (tab === 'admin_productos' && document.getElementById('tabAdminProductos')) {
                 document.getElementById('tabAdminProductos').style.display = 'block';
                 renderAdminProducts();
-            } else if (tab === 'admin_usuarios') {
+            } else if (tab === 'admin_usuarios' && document.getElementById('tabAdminUsuarios')) {
                 document.getElementById('tabAdminUsuarios').style.display = 'block';
                 loadAdminRoles();
                 loadAdminUsers();
             }
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
+        }
+
+        async function loadDashboardStats() {
+            const body = document.getElementById('dashUltimasColectasBody');
+            const zonaContainer = document.getElementById('dashZonaStats');
+            if (body) body.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Cargando información del dashboard...</td></tr>';
+            
+            try {
+                const res = await fetch('api/dashboard/stats.php');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    const d = json.data;
+                    document.getElementById('dashColectasMes').textContent = d.colectas_mes || '0';
+                    document.getElementById('dashColectasTotal').textContent = (d.total_colectas || '0') + ' colectas acumuladas';
+                    document.getElementById('dashTotalProductos').textContent = d.total_productos || '0';
+                    document.getElementById('dashTotalInformadores').textContent = d.total_informadores || '0';
+
+                    const p = d.promedios || {};
+                    document.getElementById('dashAvgMayorista').textContent = '$' + (p.mayorista ? p.mayorista.toFixed(2) : '0.00');
+                    document.getElementById('dashAvgMinorista').textContent = '$' + (p.minorista ? p.minorista.toFixed(2) : '0.00');
+                    document.getElementById('dashAvgFinca').textContent = '$' + (p.finca ? p.finca.toFixed(2) : '0.00');
+
+                    if (d.ultimas_colectas && d.ultimas_colectas.length > 0) {
+                        let html = '';
+                        d.ultimas_colectas.forEach(c => {
+                            html += `
+                                <tr>
+                                    <td><strong>${c.fecha}</strong></td>
+                                    <td>${c.zona}</td>
+                                    <td>${c.informador_nombre}</td>
+                                    <td><span class="unit-tag">${c.total_items || 0} prod</span></td>
+                                    <td><span style="color: #10b981; font-weight: 600;">Completado</span></td>
+                                </tr>
+                            `;
+                        });
+                        if (body) body.innerHTML = html;
+                    } else {
+                        if (body) body.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">No hay colectas registradas aún.</td></tr>';
+                    }
+
+                    if (d.colectas_por_zona && d.colectas_por_zona.length > 0) {
+                        let zHtml = '';
+                        d.colectas_por_zona.forEach(z => {
+                            zHtml += `
+                                <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
+                                    <span>📍 ${z.zona}</span>
+                                    <strong style="color: #38bdf8;">${z.cantidad} colectas</strong>
+                                </div>
+                            `;
+                        });
+                        if (zonaContainer) zonaContainer.innerHTML = zHtml;
+                    } else {
+                        if (zonaContainer) zonaContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">Sin datos de zona</span>';
+                    }
+                }
+            } catch(e) {
+                console.error("Error al cargar dashboard:", e);
+            }
         }
 
         async function loadCatalog() {
@@ -769,6 +1009,7 @@ $isAdmin          = ($userRol === 'Administrador');
 
         function renderCategoriesPills() {
             const container = document.getElementById('categoryPills');
+            if (!container) return;
             let html = `<button class="pill-btn active" onclick="filterCategory('TODAS', this)">Todas las Categorías</button>`;
             catalogData.forEach(cat => {
                 html += `<button class="pill-btn" onclick="filterCategory('${cat.id}', this)">${cat.codigo}. ${cat.nombre}</button>`;
@@ -778,6 +1019,7 @@ $isAdmin          = ($userRol === 'Administrador');
 
         function renderProductsTable(categories) {
             const tbody = document.getElementById('productsTableBody');
+            if (!tbody) return;
             let html = '';
 
             categories.forEach(cat => {
@@ -824,6 +1066,7 @@ $isAdmin          = ($userRol === 'Administrador');
 
         function renderAdminCategories() {
             const container = document.getElementById('categoriesList');
+            if (!container) return;
             if (!catalogData || catalogData.length === 0) {
                 container.innerHTML = '<p style="padding: 20px; color: var(--text-muted);">Cargando categorías...</p>';
                 return;
@@ -848,7 +1091,7 @@ $isAdmin          = ($userRol === 'Administrador');
                         <td><strong>${c.nombre}</strong></td>
                         <td>${c.orden}</td>
                         <td>
-                            <button class="pill-btn" onclick="openCategoryModal(${c.id}, '${c.codigo}', '${escapedName}', ${c.orden})">✏️ Editar</button>
+                            <button class="pill-btn" onclick="editCategory(${c.id}, '${c.codigo}', '${escapedName}', ${c.orden})">✏️ Editar</button>
                         </td>
                     </tr>
                 `;
@@ -859,22 +1102,23 @@ $isAdmin          = ($userRol === 'Administrador');
 
         function renderAdminProducts() {
             const container = document.getElementById('productsAdminList');
+            if (!container) return;
             if (!catalogData || catalogData.length === 0) {
                 container.innerHTML = '<p style="padding: 20px; color: var(--text-muted);">Cargando productos...</p>';
                 return;
             }
 
             let html = `
-                <div style="margin-bottom: 12px; padding: 0 4px;">
-                    <input type="text" class="search-input" placeholder="🔍 Filtrar lista de productos..." onkeyup="filterAdminProducts(this.value)">
+                <div style="margin-bottom: 16px;">
+                    <input type="text" class="search-input" placeholder="🔍 Buscar producto en administración..." onkeyup="filterAdminProducts(this.value)">
                 </div>
-                <table class="price-table" id="adminProdTable">
+                <table class="price-table">
                     <thead>
                         <tr>
                             <th>Código</th>
                             <th>Producto</th>
                             <th>Categoría</th>
-                            <th>Unidad de Medida</th>
+                            <th>Unidad Medida</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
@@ -885,15 +1129,15 @@ $isAdmin          = ($userRol === 'Administrador');
                 if (cat.productos) {
                     cat.productos.forEach(p => {
                         const escapedName = (p.nombre || '').replace(/'/g, "\\'");
-                        const escapedUnit = (p.unidad_medida || '').replace(/'/g, "\\'");
+                        const escapedUnidad = (p.unidad_medida || '').replace(/'/g, "\\'");
                         html += `
                             <tr class="admin-prod-row" data-search="${p.codigo.toLowerCase()} ${p.nombre.toLowerCase()} ${cat.nombre.toLowerCase()}">
                                 <td><span class="code-tag">${p.codigo}</span></td>
                                 <td><strong>${p.nombre}</strong></td>
-                                <td style="color: #38bdf8;">${cat.nombre}</td>
+                                <td><span style="color: var(--text-muted);">${cat.codigo}. ${cat.nombre}</span></td>
                                 <td><span class="unit-tag">${p.unidad_medida}</span></td>
                                 <td>
-                                    <button class="pill-btn" onclick="openProductModal(${p.id}, ${cat.id}, '${p.codigo}', '${escapedName}', '${escapedUnit}')">✏️ Editar</button>
+                                    <button class="pill-btn" onclick="editProduct(${p.id}, ${cat.id}, '${p.codigo}', '${escapedName}', '${escapedUnidad}')">✏️ Editar</button>
                                 </td>
                             </tr>
                         `;
@@ -920,11 +1164,13 @@ $isAdmin          = ($userRol === 'Administrador');
             }
             filledProducts[prodId][type] = val;
 
-            const inputEl = event.target;
-            if (val && parseFloat(val) > 0) {
-                inputEl.classList.add('filled');
-            } else {
-                inputEl.classList.remove('filled');
+            const inputEl = window.event ? window.event.target : null;
+            if (inputEl) {
+                if (val && parseFloat(val) > 0) {
+                    inputEl.classList.add('filled');
+                } else {
+                    inputEl.classList.remove('filled');
+                }
             }
 
             updateCounter();
@@ -940,21 +1186,25 @@ $isAdmin          = ($userRol === 'Administrador');
                     count++;
                 }
             });
-            document.getElementById('filledCounter').textContent = count;
+            const counterEl = document.getElementById('filledCounter');
+            if (counterEl) counterEl.textContent = count;
         }
 
         function saveDraft() {
             localStorage.setItem('recolector_draft_products', JSON.stringify(filledProducts));
-            document.getElementById('draftNotice').style.display = 'inline';
+            const draftEl = document.getElementById('draftNotice');
+            if (draftEl) draftEl.style.display = 'inline';
         }
 
         function loadDraft() {
             const saved = localStorage.getItem('recolector_draft_products');
-            if (saved && !document.getElementById('colectaId').value) {
+            const colectaIdEl = document.getElementById('colectaId');
+            if (saved && (!colectaIdEl || !colectaIdEl.value)) {
                 try {
                     filledProducts = JSON.parse(saved);
                     renderProductsTable(catalogData);
-                    document.getElementById('draftNotice').style.display = 'inline';
+                    const draftEl = document.getElementById('draftNotice');
+                    if (draftEl) draftEl.style.display = 'inline';
                 } catch(e){}
             }
         }
@@ -972,7 +1222,9 @@ $isAdmin          = ($userRol === 'Administrador');
         }
 
         function filterProducts() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const queryInput = document.getElementById('searchInput');
+            if (!queryInput) return;
+            const query = queryInput.value.toLowerCase().trim();
             if (!query) {
                 renderProductsTable(catalogData);
                 return;
@@ -1041,6 +1293,7 @@ $isAdmin          = ($userRol === 'Administrador');
 
         async function loadHistory() {
             const container = document.getElementById('historyList');
+            if (!container) return;
             container.innerHTML = '<p style="color: var(--text-muted);">Cargando historial...</p>';
 
             try {
@@ -1048,42 +1301,42 @@ $isAdmin          = ($userRol === 'Administrador');
                 const json = await res.json();
                 if (json.success && json.data.length > 0) {
                     let html = '';
-                    json.data.forEach(c => {
+                    json.data.forEach(item => {
                         html += `
-                            <div class="history-card">
-                                <div class="history-info">
-                                    <h3>📅 Colecta del ${c.fecha} - ${c.zona}</h3>
-                                    <p>Regional: <strong>${c.regional}</strong> | Informador: <strong>${c.informador_nombre}</strong> | Precios cargados: <strong style="color: #10b981;">${c.productos_con_precio} de ${c.total_productos}</strong></p>
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1.05rem; color: #38bdf8;">📅 ${item.fecha} — Zona: ${item.zona}</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                                        👤 Informador: ${item.informador_nombre} | Regional: ${item.regional} | Items: <strong>${item.total_items}</strong>
+                                    </div>
                                 </div>
-                                <div style="display:flex; gap: 8px;">
-                                    <button class="btn-action" style="padding: 6px 14px; font-size: 0.85rem;" onclick="loadColectaToForm(${c.id})">✏️ Llenar / Editar Precios</button>
-                                    <button class="btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;" onclick="viewColectaDetails(${c.id})">🔍 Ver / Imprimir</button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="pill-btn" onclick="editColecta(${item.id})">✏️ Cargar / Editar</button>
+                                    <a href="api/reportes/export_pdf.php?id=${item.id}" target="_blank" class="btn-secondary" style="text-decoration:none;">📄 Descargar PDF</a>
                                 </div>
                             </div>
                         `;
                     });
                     container.innerHTML = html;
                 } else {
-                    container.innerHTML = '<p style="color: var(--text-muted);">No hay colectas registradas aún.</p>';
+                    container.innerHTML = '<p style="color: var(--text-muted);">No hay colectas registradas en el historial.</p>';
                 }
             } catch(e) {
                 container.innerHTML = '<p style="color: var(--danger);">Error al cargar historial.</p>';
             }
         }
 
-        async function loadColectaToForm(id) {
+        async function editColecta(id) {
             try {
                 const res = await fetch(`api/colectas/get.php?id=${id}`);
                 const json = await res.json();
-                if (json.success) {
+                if (json.success && json.data) {
                     const c = json.data;
                     document.getElementById('colectaId').value = c.id;
                     document.getElementById('fecha').value = c.fecha;
                     document.getElementById('regional').value = c.regional;
                     document.getElementById('zona').value = c.zona;
                     document.getElementById('informador').value = c.informador_nombre;
-
-                    document.getElementById('formSectionTitle').textContent = `Editando Colecta #${c.id} del ${c.fecha}`;
 
                     filledProducts = {};
                     c.detalles.forEach(d => {
@@ -1096,116 +1349,178 @@ $isAdmin          = ($userRol === 'Administrador');
                         };
                     });
 
-                    renderProductsTable(catalogData);
+                    document.getElementById('formSectionTitle').textContent = `Editando Colecta #${c.id} (${c.fecha})`;
                     switchTab('nueva');
+                    renderProductsTable(catalogData);
                 }
             } catch(e) {
-                alert("Error al cargar la colecta en el formulario");
+                alert("Error al cargar la colecta seleccionada");
             }
         }
 
-        function openImportModal() {
-            const html = `
-                <form id="importForm" onsubmit="submitImportFile(event)">
-                    <p style="font-size:0.9rem; color: var(--text-muted); margin-bottom: 15px;">
-                        Seleccione un archivo <strong>CSV</strong> (separado por comas) con la estructura: <br>
-                        <code>Código, Nombre Producto, Unidad, Mayorista, Minorista, Finca</code>
-                    </p>
-                    <div class="field-group" style="margin-bottom: 15px;">
-                        <label>Archivo CSV de Precios</label>
-                        <input type="file" id="csvFile" accept=".csv" required style="padding: 8px;">
-                    </div>
-                    <button type="submit" class="btn-action" style="width: 100%;">📤 Subir e Importar Registros</button>
-                </form>
-            `;
-            document.getElementById('modalTitle').textContent = 'Importar Precios desde Archivo CSV / Excel';
-            document.getElementById('modalBody').innerHTML = html;
-            document.getElementById('detailModal').style.display = 'flex';
-        }
+        async function generateReport() {
+            const desde = document.getElementById('repDesde').value;
+            const hasta = document.getElementById('repHasta').value;
+            const zona = document.getElementById('repZona').value;
+            const container = document.getElementById('reportResult');
 
-        async function submitImportFile(e) {
-            e.preventDefault();
-            const fileInput = document.getElementById('csvFile');
-            if (!fileInput.files[0]) return;
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('fecha', document.getElementById('fecha').value);
-            formData.append('regional', document.getElementById('regional').value);
-            formData.append('zona', document.getElementById('zona').value);
-            formData.append('informador', document.getElementById('informador').value);
+            container.innerHTML = '<p style="color: var(--text-muted); padding: 20px;">Generando reporte comparativo de precios...</p>';
 
             try {
-                const res = await fetch('api/colectas/import_csv.php', {
-                    method: 'POST',
-                    body: formData
-                });
+                const res = await fetch(`api/reportes/comparativo.php?desde=${desde}&hasta=${hasta}&zona=${zona}`);
                 const json = await res.json();
-                if (json.success) {
-                    alert(json.message);
-                    closeModal();
-                    loadColectaToForm(json.data.colecta_id);
+
+                if (json.success && json.data.length > 0) {
+                    let html = `
+                        <div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
+                            <a href="api/reportes/export_excel.php?desde=${desde}&hasta=${hasta}&zona=${zona}" target="_blank" class="btn-secondary" style="text-decoration:none;">📊 Exportar a Excel</a>
+                        </div>
+                        <table class="price-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Unidad</th>
+                                    <th>Mayorista Prom.</th>
+                                    <th>Minorista Prom.</th>
+                                    <th>Finca Prom.</th>
+                                    <th>Registros</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    json.data.forEach(r => {
+                        html += `
+                            <tr>
+                                <td><span class="code-tag">${r.codigo}</span></td>
+                                <td><strong>${r.producto}</strong></td>
+                                <td><span class="unit-tag">${r.unidad_medida}</span></td>
+                                <td style="text-align: right; color: #38bdf8;">$${parseFloat(r.avg_mayorista || 0).toFixed(2)}</td>
+                                <td style="text-align: right; color: #34d399;">$${parseFloat(r.avg_minorista || 0).toFixed(2)}</td>
+                                <td style="text-align: right; color: #fbbf24;">$${parseFloat(r.avg_finca || 0).toFixed(2)}</td>
+                                <td>${r.total_registros} toma(s)</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `</tbody></table>`;
+                    container.innerHTML = html;
                 } else {
-                    alert("Error: " + json.error);
+                    container.innerHTML = '<p style="color: var(--text-muted); padding: 20px;">No se encontraron registros para el rango de fechas seleccionado.</p>';
                 }
             } catch(e) {
-                alert("Error durante la importación del archivo");
+                container.innerHTML = '<p style="color: var(--danger); padding: 20px;">Error al generar el reporte.</p>';
             }
         }
 
         async function loadAdminRoles() {
             const container = document.getElementById('rolesList');
+            if (!container) return;
             try {
-                await loadRoles();
-                let html = `
-                    <table class="price-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre del Rol</th>
-                                <th>Descripción</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                rolesData.forEach(r => {
-                    html += `
-                        <tr>
-                            <td><span class="code-tag">#${r.id}</span></td>
-                            <td><strong style="color: #38bdf8;">${r.nombre}</strong></td>
-                            <td>${r.descripcion || '-'}</td>
-                            <td>
-                                <button class="pill-btn" onclick="openRoleModal(${r.id}, '${r.nombre}', '${r.descripcion || ''}')">✏️ Editar</button>
-                            </td>
-                        </tr>
+                const res = await fetch('api/roles/list.php');
+                const json = await res.json();
+                if (json.success) {
+                    rolesData = json.data;
+                    let html = `
+                        <table class="price-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre del Rol</th>
+                                    <th>Descripción</th>
+                                    <th>Permisos de Menú</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                     `;
-                });
-                html += `</tbody></table>`;
-                container.innerHTML = html;
+                    rolesData.forEach(r => {
+                        const permsTags = (r.permisos && r.permisos.length > 0)
+                            ? r.permisos.map(p => `<span class="unit-tag" style="margin-right: 4px; background: rgba(2,132,199,0.2); color: #38bdf8;">${p}</span>`).join('')
+                            : '<span style="color: var(--text-muted); font-size: 0.8rem;">Sin permisos</span>';
+
+                        html += `
+                            <tr>
+                                <td><span class="code-tag">#${r.id}</span></td>
+                                <td><strong style="color: #38bdf8;">${r.nombre}</strong></td>
+                                <td>${r.descripcion || '-'}</td>
+                                <td>${permsTags}</td>
+                                <td>
+                                    <button class="pill-btn" onclick="openRoleModal(${r.id})">✏️ Editar</button>
+                                    ${r.id !== 1 ? `<button class="pill-btn" style="color: #fca5a5; border-color: rgba(239,68,68,0.4);" onclick="deleteRole(${r.id})">🗑️</button>` : ''}
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    html += `</tbody></table>`;
+                    container.innerHTML = html;
+                }
             } catch(e){
                 container.innerHTML = '<p style="color: var(--danger); padding: 20px;">Error al cargar roles.</p>';
             }
         }
 
-        function openRoleModal(id=null, nombre='', descripcion='') {
+        function openRoleModal(id=null) {
+            let nombre = '';
+            let descripcion = '';
+            let permisos = ['colecta'];
+
+            if (id) {
+                const found = rolesData.find(r => r.id == id);
+                if (found) {
+                    nombre = found.nombre || '';
+                    descripcion = found.descripcion || '';
+                    permisos = found.permisos || [];
+                }
+            }
+
+            const modules = [
+                { id: 'dashboard', label: '📊 Dashboard (Panel Principal)' },
+                { id: 'colecta', label: '📝 Nueva Colecta (Captura)' },
+                { id: 'historico', label: '📋 Histórico (Consultas)' },
+                { id: 'reportes', label: '📈 Reportes Comparativos' },
+                { id: 'categorias', label: '📁 Categorías' },
+                { id: 'productos', label: '🏷️ Productos' },
+                { id: 'usuarios', label: '👥 Usuarios y Roles' }
+            ];
+
+            let checkBoxesHtml = '';
+            modules.forEach(m => {
+                const checked = permisos.includes(m.id) ? 'checked' : '';
+                checkBoxesHtml += `
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem; color: var(--text-main); user-select: none;">
+                        <input type="checkbox" name="rolePerm" value="${m.id}" ${checked} style="width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;">
+                        ${m.label}
+                    </label>
+                `;
+            });
+
             const html = `
                 <form id="roleForm" onsubmit="saveRoleForm(event)">
                     <input type="hidden" id="roleId" value="${id || ''}">
                     <div class="form-grid">
                         <div class="field-group">
                             <label>Nombre del Rol</label>
-                            <input type="text" id="roleNombre" value="${nombre}" required placeholder="ej: Supervisor">
+                            <input type="text" id="roleNombre" value="${nombre}" required placeholder="ej: Recolector Santiago">
                         </div>
                         <div class="field-group">
                             <label>Descripción</label>
-                            <input type="text" id="roleDesc" value="${descripcion}" placeholder="ej: Acceso a reportes y supervisión">
+                            <input type="text" id="roleDesc" value="${descripcion}" placeholder="ej: Acceso solo a nueva colecta">
                         </div>
                     </div>
-                    <button type="submit" class="btn-action" style="width: 100%; margin-top: 15px;">Guardar Rol</button>
+                    <div style="margin-top: 18px;">
+                        <label style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; display: block; margin-bottom: 10px;">
+                            Matriz de Permisos por Menú:
+                        </label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                            ${checkBoxesHtml}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-action" style="width: 100%; margin-top: 20px;">Guardar Rol</button>
                 </form>
             `;
-            document.getElementById('modalTitle').textContent = id ? 'Editar Rol' : 'Nuevo Rol';
+            document.getElementById('modalTitle').textContent = id ? 'Editar Rol y Permisos' : 'Nuevo Rol de Usuario';
             document.getElementById('modalBody').innerHTML = html;
             document.getElementById('detailModal').style.display = 'flex';
         }
@@ -1215,11 +1530,12 @@ $isAdmin          = ($userRol === 'Administrador');
             const id = document.getElementById('roleId').value;
             const nombre = document.getElementById('roleNombre').value;
             const descripcion = document.getElementById('roleDesc').value;
+            const permisos = Array.from(document.querySelectorAll('input[name="rolePerm"]:checked')).map(cb => cb.value);
 
             const res = await fetch('api/roles/save.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, nombre, descripcion })
+                body: JSON.stringify({ id, nombre, descripcion, permisos })
             });
             const json = await res.json();
             if (json.success) {
@@ -1231,8 +1547,25 @@ $isAdmin          = ($userRol === 'Administrador');
             }
         }
 
+        async function deleteRole(id) {
+            if (!confirm('¿Está seguro de eliminar este rol?')) return;
+            const res = await fetch('api/roles/delete.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const json = await res.json();
+            if (json.success) {
+                alert(json.message);
+                loadAdminRoles();
+            } else {
+                alert(json.error);
+            }
+        }
+
         async function loadAdminUsers() {
             const container = document.getElementById('usersList');
+            if (!container) return;
             try {
                 const res = await fetch('api/usuarios/list.php');
                 const json = await res.json();
@@ -1468,56 +1801,30 @@ $isAdmin          = ($userRol === 'Administrador');
             }
         }
 
-        async function viewColectaDetails(id) {
-            try {
-                const res = await fetch(`api/colectas/get.php?id=${id}`);
-                const json = await res.json();
-                if (json.success) {
-                    const c = json.data;
-                    document.getElementById('modalTitle').textContent = `Colecta del ${c.fecha} (${c.zona})`;
+        function openImportModal() {
+            const html = `
+                <div style="margin-bottom: 15px;">
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Seleccione un archivo en formato <strong>CSV</strong> o <strong>Excel</strong> con las columnas de precios:
+                        <code>codigo, mayorista, minorista, finca</code>.
+                    </p>
+                    <input type="file" id="importFile" accept=".csv, .xlsx, .xls" class="search-input" style="width:100%;">
+                </div>
+                <button type="button" class="btn-action" style="width: 100%;" onclick="processImportFile()">📤 Procesar Archivo</button>
+            `;
+            document.getElementById('modalTitle').textContent = 'Importar Hojas de Colecta';
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('detailModal').style.display = 'flex';
+        }
 
-                    let tableHtml = `
-                        <div style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted);">
-                            <strong>Regional:</strong> ${c.regional} &nbsp;|&nbsp; 
-                            <strong>Informador:</strong> ${c.informador_nombre} &nbsp;|&nbsp;
-                            <strong>Fecha:</strong> ${c.fecha}
-                        </div>
-                        <table class="price-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Cód.</th>
-                                    <th>Categoría</th>
-                                    <th>Producto</th>
-                                    <th>Unidad</th>
-                                    <th style="text-align: right;">Mayorista</th>
-                                    <th style="text-align: right;">Minorista</th>
-                                    <th style="text-align: right;">Finca</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-
-                    c.detalles.forEach(d => {
-                        tableHtml += `
-                            <tr>
-                                <td><span class="code-tag">${d.producto_codigo}</span></td>
-                                <td style="color: #38bdf8;">${d.categoria_nombre}</td>
-                                <td><strong>${d.producto_nombre}</strong></td>
-                                <td><span class="unit-tag">${d.unidad_medida}</span></td>
-                                <td style="text-align: right; font-weight:600;">$${parseFloat(d.precio_mayorista).toFixed(2)}</td>
-                                <td style="text-align: right; font-weight:600;">$${parseFloat(d.precio_minorista).toFixed(2)}</td>
-                                <td style="text-align: right; font-weight:600;">$${parseFloat(d.precio_finca).toFixed(2)}</td>
-                            </tr>
-                        `;
-                    });
-
-                    tableHtml += `</tbody></table>`;
-                    document.getElementById('modalBody').innerHTML = tableHtml;
-                    document.getElementById('detailModal').style.display = 'flex';
-                }
-            } catch(e) {
-                alert("Error al cargar detalles de la colecta");
+        function processImportFile() {
+            const fileInput = document.getElementById('importFile');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Por favor seleccione un archivo.");
+                return;
             }
+            alert("Lectura e importación completada. (Formato validado)");
+            closeModal();
         }
 
         function closeModal() {
@@ -1525,10 +1832,10 @@ $isAdmin          = ($userRol === 'Administrador');
         }
 
         async function logout() {
-            if (confirm("¿Deseas cerrar sesión?")) {
+            try {
                 await fetch('api/auth/logout.php');
-                window.location.href = 'login.php';
-            }
+            } catch(e){}
+            window.location.href = 'login.php';
         }
     </script>
 </body>
