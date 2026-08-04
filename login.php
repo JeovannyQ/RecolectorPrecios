@@ -227,9 +227,7 @@ if (isset($_SESSION['user_id'])) {
             </button>
         </form>
 
-        <div class="demo-info">
-            Acceso inicial: Usuario <code>admin</code> | Clave <code>admin123</code>
-        </div>
+
     </div>
 
     <script>
